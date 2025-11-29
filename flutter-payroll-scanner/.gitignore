@@ -115,7 +115,7 @@ google-services.json
 GoogleService-Info.plist
 
 # Sensitive data
-**/lib/core/config/firebase_options.dart.backup
+**/lib/core/config/firebase_options.dart**
 
 # Generated files
 *.g.dart

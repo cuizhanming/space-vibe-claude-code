@@ -42,12 +42,12 @@ class DefaultFirebaseOptions {
   // TODO: Replace with your actual Firebase configuration
   // Run `flutterfire configure` to generate these values automatically
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'YOUR_WEB_API_KEY',
-    appId: 'YOUR_WEB_APP_ID',
-    messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-    projectId: 'YOUR_PROJECT_ID',
-    authDomain: 'YOUR_AUTH_DOMAIN',
-    storageBucket: 'YOUR_STORAGE_BUCKET',
+    apiKey: 'AIzaSyDqwjj9hw6Ri8Tnb0Hfqr2GhNgbrrJPwBM',
+    appId: '1:709114704478:web:da3a6bed4fe512ac967acf',
+    messagingSenderId: '709114704478',
+    projectId: 'flutter-payroll-scanner',
+    authDomain: 'flutter-payroll-scanner.firebaseapp.com',
+    storageBucket: 'flutter-payroll-scanner.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(

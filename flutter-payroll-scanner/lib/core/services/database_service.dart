@@ -1,12 +1,8 @@
-import 'dart:io';
-
 import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 
 import '../database/tables.dart';
+import 'database_connection.dart';
 
 part 'database_service.g.dart';
 
@@ -64,9 +60,10 @@ class DatabaseService extends _$DatabaseService {
   }
 
   Future<int> insertPayrollItems(List<PayrollItemsCompanion> items) async {
-    return await batch((batch) {
+    await batch((batch) {
       batch.insertAll(payrollItems, items);
     });
+    return items.length;
   }
 
   Future<bool> updatePayrollItem(PayrollItem item) {
@@ -106,12 +103,8 @@ class DatabaseService extends _$DatabaseService {
   }
 }
 
-LazyDatabase _openConnection() {
-  return LazyDatabase(() async {
-    final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'payroll_scanner.db'));
-    return NativeDatabase(file);
-  });
+QueryExecutor _openConnection() {
+  return openDatabaseConnection();
 }
 
 final databaseServiceProvider = Provider<DatabaseService>((ref) {

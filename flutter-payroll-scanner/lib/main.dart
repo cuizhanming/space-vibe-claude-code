@@ -22,16 +22,7 @@ final logger = Logger(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // Initialize local database
-  final databaseService = DatabaseService();
-  await databaseService.initialize();
-
-  // Configure error handling
+  // Configure error handling first
   FlutterError.onError = (details) {
     logger.e(
       'Flutter error occurred',
@@ -48,6 +39,21 @@ void main() async {
     );
     return true;
   };
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize local database
+  final databaseService = DatabaseService();
+  try {
+    // Add a timeout to prevent hanging forever
+    await databaseService.initialize().timeout(const Duration(seconds: 5));
+  } catch (e, stack) {
+    logger.e('Failed to initialize database', error: e, stackTrace: stack);
+    // We continue running the app even if DB fails, so the UI shows up
+  }
 
   runApp(
     ProviderScope(
