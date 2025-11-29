@@ -101,6 +101,10 @@ coverage/
 .env.local
 .env.*.local
 
+# But allow example env files
+!.env.example
+!**/.env.example
+
 # Firebase
 firebase.json
 .firebaserc
