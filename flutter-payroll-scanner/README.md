@@ -97,27 +97,60 @@ This will:
 
 4. Update `lib/core/config/firebase_options.dart` with your Firebase configuration
 
-### 5. Gemini API Setup
+### 5. Security & Secrets Management ⚠️
 
-1. Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+**IMPORTANT**: This app uses a production-ready security architecture. See [SECURITY.md](SECURITY.md) for complete details.
 
-2. Add the API key to your environment:
+#### Development Setup
 
-**Option A: Environment Variable (Recommended)**
+For local development only:
 ```bash
-export GEMINI_API_KEY="your-api-key-here"
+# Run with development configuration
+flutter run -t lib/main_dev.dart \
+  --dart-define=BACKEND_URL=http://localhost:3000
 ```
 
-**Option B: Update the code**
-Edit `lib/core/services/gemini_service.dart` and replace:
-```dart
-const apiKey = String.fromEnvironment(
-  'GEMINI_API_KEY',
-  defaultValue: 'YOUR_GEMINI_API_KEY_HERE',
-);
+#### Production Setup (Recommended)
+
+**⚠️ NEVER expose Gemini API keys in client apps**
+
+The production-ready approach uses a backend proxy service:
+
+1. **Set up Backend Service** (see `backend/` folder):
+   ```bash
+   cd backend
+   npm install
+   cp .env.example .env
+   # Edit .env with your GEMINI_API_KEY
+   npm start
+   ```
+
+2. **Deploy Backend** to your infrastructure:
+   - Node.js server (AWS, GCP, Azure)
+   - Firebase Cloud Functions
+   - Any serverless platform
+
+3. **Configure Flutter App**:
+   ```bash
+   flutter build apk -t lib/main_production.dart \
+     --dart-define=BACKEND_URL=https://your-backend.com \
+     --dart-define=ENVIRONMENT=production
+   ```
+
+**Architecture**:
+```
+Flutter App → Your Backend → Gemini API
+           (authenticated)  (API key safe)
 ```
 
-with your actual API key (not recommended for production).
+**Benefits**:
+- ✅ API keys never exposed to clients
+- ✅ Rate limiting and abuse prevention
+- ✅ User authentication/authorization
+- ✅ Cost control and monitoring
+- ✅ Response caching
+
+See [SECURITY.md](SECURITY.md) for detailed implementation guide.
 
 ### 6. Generate Code
 

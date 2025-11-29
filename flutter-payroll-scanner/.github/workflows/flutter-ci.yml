@@ -1,0 +1,380 @@
+name: Flutter CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, staging]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'android/**'
+      - 'ios/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+env:
+  FLUTTER_VERSION: '3.24.0'
+  JAVA_VERSION: '17'
+
+jobs:
+  # Code Quality & Testing
+  analyze:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Analyze code
+        run: flutter analyze
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
+  test:
+    name: Unit & Widget Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: analyze
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Run tests
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage/lcov.info
+          flags: flutter
+          name: flutter-coverage
+
+  # Android Build
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [analyze, test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+        include:
+          - environment: development
+            branch: develop
+            build-name: dev
+          - environment: staging
+            branch: staging
+            build-name: staging
+          - environment: production
+            branch: main
+            build-name: prod
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Decode keystore
+        if: matrix.environment == 'production'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/keystore.jks
+
+      - name: Create key.properties
+        if: matrix.environment == 'production'
+        run: |
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=keystore.jks
+          EOF
+
+      - name: Build APK (Development)
+        if: matrix.environment == 'development'
+        run: |
+          flutter build apk \
+            -t lib/main_dev.dart \
+            --dart-define=BACKEND_URL=${{ secrets.DEV_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=development \
+            --debug
+
+      - name: Build APK (Staging)
+        if: matrix.environment == 'staging'
+        run: |
+          flutter build apk \
+            -t lib/main_staging.dart \
+            --dart-define=BACKEND_URL=${{ secrets.STAGING_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=staging \
+            --release
+
+      - name: Build App Bundle (Production)
+        if: matrix.environment == 'production'
+        run: |
+          flutter build appbundle \
+            -t lib/main_production.dart \
+            --dart-define=BACKEND_URL=${{ secrets.PROD_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=production \
+            --release
+
+      - name: Upload APK/AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ matrix.environment }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            build/app/outputs/bundle/release/*.aab
+          retention-days: 30
+
+  # iOS Build
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+    timeout-minutes: 45
+    needs: [analyze, test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Install CocoaPods
+        run: |
+          cd ios
+          pod install
+
+      - name: Build iOS (Development)
+        if: matrix.environment == 'development'
+        run: |
+          flutter build ios \
+            -t lib/main_dev.dart \
+            --dart-define=BACKEND_URL=${{ secrets.DEV_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=development \
+            --debug \
+            --no-codesign
+
+      - name: Build iOS (Staging)
+        if: matrix.environment == 'staging'
+        run: |
+          flutter build ios \
+            -t lib/main_staging.dart \
+            --dart-define=BACKEND_URL=${{ secrets.STAGING_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=staging \
+            --release \
+            --no-codesign
+
+      - name: Build iOS (Production)
+        if: matrix.environment == 'production'
+        run: |
+          flutter build ios \
+            -t lib/main_production.dart \
+            --dart-define=BACKEND_URL=${{ secrets.PROD_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=production \
+            --release \
+            --no-codesign
+
+  # Web Build
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [analyze, test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: flutter pub run build_runner build --delete-conflicting-outputs
+
+      - name: Build Web (Development)
+        if: matrix.environment == 'development'
+        run: |
+          flutter build web \
+            -t lib/main_dev.dart \
+            --dart-define=BACKEND_URL=${{ secrets.DEV_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=development
+
+      - name: Build Web (Staging)
+        if: matrix.environment == 'staging'
+        run: |
+          flutter build web \
+            -t lib/main_staging.dart \
+            --dart-define=BACKEND_URL=${{ secrets.STAGING_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=staging \
+            --release
+
+      - name: Build Web (Production)
+        if: matrix.environment == 'production'
+        run: |
+          flutter build web \
+            -t lib/main_production.dart \
+            --dart-define=BACKEND_URL=${{ secrets.PROD_BACKEND_URL }} \
+            --dart-define=ENVIRONMENT=production \
+            --release
+
+      - name: Upload Web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-${{ matrix.environment }}
+          path: build/web
+          retention-days: 30
+
+  # Deploy Web to Firebase Hosting
+  deploy-web:
+    name: Deploy Web to Firebase
+    runs-on: ubuntu-latest
+    needs: build-web
+    if: github.event_name == 'push'
+
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+        include:
+          - environment: development
+            branch: develop
+            firebase-channel: dev
+          - environment: staging
+            branch: staging
+            firebase-channel: staging
+          - environment: production
+            branch: main
+            firebase-channel: live
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-${{ matrix.environment }}
+          path: build/web
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
+          channelId: ${{ matrix.firebase-channel }}
+          target: payroll-scanner-${{ matrix.environment }}
+
+  # Notify on completion
+  notify:
+    name: Notify Build Status
+    runs-on: ubuntu-latest
+    needs: [build-android, build-ios, build-web]
+    if: always()
+
+    steps:
+      - name: Slack Notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "Build ${{ job.status }}: ${{ github.repository }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Build Status*: ${{ job.status }}\n*Branch*: ${{ github.ref_name }}\n*Commit*: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
