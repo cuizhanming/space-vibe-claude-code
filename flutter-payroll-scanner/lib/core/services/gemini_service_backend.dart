@@ -325,3 +325,7 @@ final geminiServiceBackendProvider = Provider<GeminiServiceBackend>((ref) {
 
   return GeminiServiceBackend(dio: dio, config: config);
 });
+
+/// Simplified alias for the Gemini service
+/// This is the recommended provider to use throughout the app
+final geminiServiceProvider = geminiServiceBackendProvider;

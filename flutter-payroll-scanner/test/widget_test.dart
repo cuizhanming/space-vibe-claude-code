@@ -1,30 +1,51 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:payroll_scanner/main.dart';
+import 'package:payroll_scanner/app.dart';
+import 'package:payroll_scanner/core/services/database_service.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('PayrollScannerApp renders without crashing',
+      (WidgetTester tester) async {
+    // Create a mock database service
+    final mockDatabaseService = DatabaseService();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Build our app and trigger a frame
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseServiceProvider.overrideWithValue(mockDatabaseService),
+        ],
+        child: const PayrollScannerApp(),
+      ),
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Wait for the app to settle
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the app renders (should show login or home page)
+    // The app should not crash during initialization
+    expect(find.byType(MaterialApp), findsOneWidget);
+  });
+
+  testWidgets('App uses correct theme configuration',
+      (WidgetTester tester) async {
+    final mockDatabaseService = DatabaseService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          databaseServiceProvider.overrideWithValue(mockDatabaseService),
+        ],
+        child: const PayrollScannerApp(),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Verify MaterialApp is configured
+    final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
+    expect(materialApp.title, 'Payroll Scanner');
+    expect(materialApp.debugShowCheckedModeBanner, false);
   });
 }
