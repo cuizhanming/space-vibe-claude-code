@@ -227,7 +227,7 @@ gcloud run deploy backend-prod \
 # Get service URL
 gcloud run services describe backend-prod \
   --platform managed \
-  --region us-central1 \
+  --region europe-west2 \
   --format 'value(status.url)'
 ```
 
@@ -463,7 +463,7 @@ Sentry.init({ dsn: process.env.SENTRY_DSN });
 ```bash
 # Cloud Run logs
 gcloud run services logs read backend-prod \
-  --region us-central1 \
+  --region europe-west2 \
   --limit 100
 
 # Or use Cloud Console
