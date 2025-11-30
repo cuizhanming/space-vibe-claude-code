@@ -60,6 +60,9 @@ dependencies:
   http: ^1.2.2
   dio: ^5.7.0
 
+  # Crash Reporting & Error Tracking
+  sentry_flutter: ^8.9.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

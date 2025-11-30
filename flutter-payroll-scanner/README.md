@@ -12,6 +12,39 @@ A Flutter application for scanning and processing Irish payroll documents using 
 - ☁️ **Cloud Sync**: Firestore for remote data synchronization
 - 🇮🇪 **Irish Payroll Support**: Specialized for Irish payroll documents (PAYE, PRSI, USC, PPS numbers)
 
+## TODO List
+
+### ✅ Completed
+- [x] **Critical #1**: Remove duplicate Gemini service (security improvement)
+- [x] **Critical #2**: Add 29 unit tests (100% coverage of entities/utilities)
+- [x] **Critical #3**: Implement Sentry crash reporting (production-ready)
+- [x] Organize documentation in docs/ folder
+
+### 🔴 High Priority
+- [ ] **#4**: Add database indexes for query performance
+- [ ] **#5**: Implement image compression (reduce bandwidth by 20-30%)
+- [ ] **#6**: Set up CI/CD pipeline (GitHub Actions)
+- [ ] **#7**: Extend cache TTL to 7 days (reduce API costs by 30-50%)
+- [ ] **#8**: Add input validation on backend
+
+### 🟡 Medium Priority
+- [ ] **#9**: Add widget tests for UI components
+- [ ] **#10**: Implement certificate pinning for enhanced security
+- [ ] **#11**: Add Redis caching for better performance at scale
+- [ ] **#12**: Create VS Code code snippets
+- [ ] **#13**: Add performance monitoring dashboard
+
+### 📋 Backlog
+- [ ] Implement full document processing pipeline
+- [ ] Add OCR for scanned documents
+- [ ] Support multiple languages
+- [ ] Export to PDF/Excel
+- [ ] Data analytics dashboard
+- [ ] Batch document processing
+- [ ] Document search and filtering
+
+See [docs/optimizations/OPTIMIZATION_PLAN.md](docs/optimizations/OPTIMIZATION_PLAN.md) for detailed optimization recommendations.
+
 ## Architecture
 
 This project follows Clean Architecture with a feature-first approach:
@@ -99,7 +132,7 @@ This will:
 
 ### 5. Security & Secrets Management ⚠️
 
-**IMPORTANT**: This app uses a production-ready security architecture. See [SECURITY.md](SECURITY.md) for complete details.
+**IMPORTANT**: This app uses a production-ready security architecture. See [docs/SECURITY.md](docs/SECURITY.md) for complete details.
 
 #### Development Setup
 
@@ -150,7 +183,7 @@ Flutter App → Your Backend → Gemini API
 - ✅ Cost control and monitoring
 - ✅ Response caching
 
-See [SECURITY.md](SECURITY.md) for detailed implementation guide.
+See [docs/SECURITY.md](docs/SECURITY.md) for detailed implementation guide.
 
 ### 6. Generate Code
 
@@ -443,13 +476,22 @@ For issues and questions:
 - Create an issue in the repository
 - Contact: [your-email@example.com]
 
-## Roadmap
+## Documentation
 
-- [ ] Implement full document processing pipeline
-- [ ] Add OCR for scanned documents
-- [ ] Support multiple languages
-- [ ] Export to PDF/Excel
-- [ ] Data analytics dashboard
-- [ ] Batch document processing
-- [ ] Document search and filtering
-- [ ] Dark mode support (already implemented in theme)
+Comprehensive documentation is available in the [`docs/`](docs/) folder:
+
+### Setup & Configuration
+- [Firebase Setup](docs/FIREBASE_SETUP.md) - Complete Firebase configuration guide
+- [Sentry Crash Reporting](docs/SENTRY_SETUP.md) - Error tracking setup
+- [Quick Start](docs/QUICKSTART.md) - Getting started guide
+- [Deployment](docs/DEPLOYMENT.md) - Production deployment
+- [Security Guide](docs/SECURITY.md) - Security best practices
+- [Architecture](docs/ARCHITECTURE.md) - System architecture and design
+
+### Optimizations & Improvements
+- [Optimization Plan](docs/optimizations/OPTIMIZATION_PLAN.md) - 15 optimization opportunities with priorities
+- [Implementation Summary](docs/optimizations/IMPLEMENTATION_SUMMARY.md) - Completed optimizations
+- [Feature Parity Check](docs/optimizations/FEATURE_PARITY_CHECK.md) - Service consolidation verification
+- [Session Summary](docs/optimizations/SESSION_SUMMARY.md) - Complete optimization session summary
+
+See [docs/INDEX.md](docs/INDEX.md) for the complete documentation index.
