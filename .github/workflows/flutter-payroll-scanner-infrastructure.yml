@@ -3,10 +3,10 @@ name: Firebase IaC
 on:
   push:
     branches: [ main ]
-    paths: [ 'terraform/**' ]
+    paths: [ 'flutter-payroll-scanner/terraform/**' ]
   pull_request:
     branches: [ main ]
-    paths: [ 'terraform/**' ]
+    paths: [ 'flutter-payroll-scanner/terraform/**' ]
 
 env:
   TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
@@ -34,13 +34,13 @@ jobs:
 
     - name: Terraform Init
       run: terraform init
-      working-directory: ./terraform
+      working-directory: ./flutter-payroll-scanner/terraform
 
     - name: Terraform Plan
       run: terraform plan
-      working-directory: ./terraform
+      working-directory: ./flutter-payroll-scanner/terraform
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: terraform apply -auto-approve
-      working-directory: ./terraform
+      working-directory: ./flutter-payroll-scanner/terraform
