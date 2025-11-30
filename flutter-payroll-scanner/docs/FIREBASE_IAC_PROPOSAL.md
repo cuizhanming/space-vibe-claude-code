@@ -40,9 +40,53 @@ This document outlines the plan to automate the Firebase setup described in `FIR
     -   Create a Service Account for Terraform (e.g., `terraform-runner@<project-id>.iam.gserviceaccount.com`).
 3.  Grant necessary roles:
     -   `roles/editor` (or granular roles like `roles/firebase.admin`, `roles/resourcemanager.projectIamAdmin`).
-4.  Configure **Workload Identity Federation**:
+4.  Configure **Workload Identity Federation** (Detailed steps below).
     -   Create a Workload Identity Pool and Provider.
     -   Allow the GitHub Action to impersonate the Service Account.
+
+#### Detailed Workload Identity Setup
+
+Run these commands in your terminal (replace placeholders):
+
+```bash
+# 1. Variables
+export PROJECT_ID="flutter-payroll-scanner"
+export SERVICE_ACCOUNT="terraform-runner@${PROJECT_ID}.iam.gserviceaccount.com"
+export POOL_NAME="github-pool"
+export PROVIDER_NAME="github-provider"
+export REPO="cuizhanming/space-vibe-claude-code"
+export GITHUB_ORG="cuizhanming"
+
+# 2. Create the Workload Identity Pool
+gcloud iam workload-identity-pools create "${POOL_NAME}" \
+  --project="${PROJECT_ID}" \
+  --location="global" \
+  --display-name="GitHub Actions Pool"
+
+# 3. Create the OIDC Provider
+gcloud iam workload-identity-pools providers create-oidc "${PROVIDER_NAME}" \
+  --project="${PROJECT_ID}" \
+  --location="global" \
+  --workload-identity-pool="${POOL_NAME}" \
+  --display-name="GitHub Actions Provider" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository_owner=='${GITHUB_ORG}'" \
+  --issuer-uri="https://token.actions.githubusercontent.com"
+
+# 4. Get the Provider Resource Name (Save this for GitHub Secret WIF_PROVIDER)
+gcloud iam workload-identity-pools providers describe "${PROVIDER_NAME}" \
+  --project="${PROJECT_ID}" \
+  --location="global" \
+  --workload-identity-pool="${POOL_NAME}" \
+  --format="value(name)"
+
+# 5. Allow GitHub Action to impersonate Service Account
+# This binds the "repository" claim to the Service Account
+gcloud iam service-accounts add-iam-policy-binding "${SERVICE_ACCOUNT}" \
+  --project="${PROJECT_ID}" \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/$(gcloud projects describe ${PROJECT_ID} --format='value(projectNumber)')/locations/global/workloadIdentityPools/${POOL_NAME}/attribute.repository/${REPO}"
+```
 
 ### Step 2: Terraform Configuration
 

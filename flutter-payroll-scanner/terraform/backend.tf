@@ -1,9 +1,9 @@
-terraform {
-  cloud {
-    organization = "your-organization-name"
+terraform { 
+  cloud { 
+    organization = "cuizhanming-com" 
 
-    workspaces {
-      name = "flutter-payroll-scanner-prod"
-    }
-  }
+    workspaces { 
+      name = "flutter-payroll-scanner-prod" 
+    } 
+  } 
 }
