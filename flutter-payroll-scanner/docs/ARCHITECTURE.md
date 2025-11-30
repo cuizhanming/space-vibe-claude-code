@@ -119,7 +119,7 @@
 **Option A: Firebase Cloud Functions** (Recommended for Firebase integration)
 
 ```bash
-Location: us-central1
+Location: europe-west2
 Runtime: Node.js 20
 Memory: 512MB
 Timeout: 60s
@@ -130,7 +130,7 @@ Max Instances: 100
 **Option B: Google Cloud Run** (Recommended for flexibility)
 
 ```bash
-Location: us-central1
+Location: europe-west2
 Container: Node.js 20 Alpine
 CPU: 1 vCPU
 Memory: 512Mi

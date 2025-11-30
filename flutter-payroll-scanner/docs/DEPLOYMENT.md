@@ -213,7 +213,7 @@ docker push gcr.io/YOUR_PROJECT_ID/backend:latest
 gcloud run deploy backend-prod \
   --image gcr.io/YOUR_PROJECT_ID/backend:latest \
   --platform managed \
-  --region us-central1 \
+  --region europe-west2 \
   --allow-unauthenticated \
   --set-env-vars="NODE_ENV=production" \
   --set-secrets="GEMINI_API_KEY=gemini-api-key:latest,FIREBASE_PROJECT_ID=firebase-project-id:latest" \
@@ -238,7 +238,7 @@ gcloud run services describe backend-prod \
 gcloud run domain-mappings create \
   --service backend-prod \
   --domain api.yourdomain.com \
-  --region us-central1
+  --region europe-west2
 
 # Add DNS records as instructed by gcloud output
 ```
@@ -508,7 +508,7 @@ gcloud run services logs read backend-prod \
 # Rollback Cloud Run to previous revision
 gcloud run services update-traffic backend-prod \
   --to-revisions=PREVIOUS_REVISION=100 \
-  --region us-central1
+  --region europe-west2
 
 # Rollback Play Store release
 # Use Play Console to halt rollout or rollback
@@ -535,12 +535,12 @@ gcloud run services update-traffic backend-prod \
 gcloud run services list
 
 # Describe service
-gcloud run services describe backend-prod --region us-central1
+gcloud run services describe backend-prod --region europe-west2
 
 # Update service with new environment variable
 gcloud run services update backend-prod \
   --update-env-vars KEY=VALUE \
-  --region us-central1
+  --region europe-west2
 
 # View recent deployments
 gcloud run revisions list --service backend-prod

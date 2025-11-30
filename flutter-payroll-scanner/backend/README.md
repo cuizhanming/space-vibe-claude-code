@@ -73,7 +73,7 @@ firebase deploy --only functions
 
 ```dart
 // Update backend URL to your Cloud Function
-const backendUrl = 'https://us-central1-your-project.cloudfunctions.net';
+const backendUrl = 'https://europe-west2-your-project.cloudfunctions.net';
 ```
 
 ## API Endpoints
