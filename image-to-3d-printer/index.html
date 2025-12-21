@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to 3D Printer</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Image to 3D Printable File Converter</h1>
+            <p>Transform your images into 3D printable STL files</p>
+        </header>
+
+        <main>
+            <section class="upload-section">
+                <div class="upload-zone" id="uploadZone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p>Drag and drop an image here or click to browse</p>
+                    <input type="file" id="fileInput" accept="image/*" hidden>
+                </div>
+            </section>
+
+            <section class="preview-section">
+                <div class="preview-container">
+                    <div class="preview-panel">
+                        <h3>Original Image</h3>
+                        <canvas id="imageCanvas"></canvas>
+                    </div>
+                    <div class="preview-panel">
+                        <h3>3D Preview</h3>
+                        <div id="threeDPreview"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="controls-section">
+                <h3>3D Model Settings</h3>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <label for="heightScale">Height Scale (mm)</label>
+                        <input type="range" id="heightScale" min="1" max="50" value="10" step="0.5">
+                        <span id="heightScaleValue">10</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="baseThickness">Base Thickness (mm)</label>
+                        <input type="range" id="baseThickness" min="1" max="10" value="2" step="0.5">
+                        <span id="baseThicknessValue">2</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="modelWidth">Model Width (mm)</label>
+                        <input type="range" id="modelWidth" min="10" max="200" value="100" step="5">
+                        <span id="modelWidthValue">100</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="resolution">Resolution</label>
+                        <select id="resolution">
+                            <option value="64">Low (64x64)</option>
+                            <option value="128" selected>Medium (128x128)</option>
+                            <option value="256">High (256x256)</option>
+                            <option value="512">Very High (512x512)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="invertHeight">Invert Height</label>
+                        <input type="checkbox" id="invertHeight">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button id="generateBtn" disabled>Generate 3D Model</button>
+                    <button id="downloadBtn" disabled>Download STL File</button>
+                </div>
+            </section>
+
+            <section class="info-section">
+                <h3>How it works</h3>
+                <ol>
+                    <li>Upload an image (JPG, PNG, etc.)</li>
+                    <li>The app converts the image to a grayscale height map</li>
+                    <li>Adjust settings to customize your 3D model</li>
+                    <li>Preview the 3D model in real-time</li>
+                    <li>Download the STL file for 3D printing</li>
+                </ol>
+                <p class="tip"><strong>Tip:</strong> Images with high contrast work best. Lighter areas become raised surfaces, darker areas become recessed.</p>
+            </section>
+        </main>
+
+        <footer>
+            <p>Created with Three.js • Ready for your 3D printer</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
