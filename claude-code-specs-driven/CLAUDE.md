@@ -2,6 +2,48 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚡ Session Start Ritual
+
+At the start of every session:
+1. Read `spec/.current-spec` to know what's active
+2. Read `spec/[current]/tasks.md` to find where we left off
+3. Read `DECISIONS.md` for recent architectural context
+4. State: "Resuming spec [ID], next task: [X.X - description]"
+
+## 🧠 Context Window Management
+
+Context fills fast. Follow these rules to avoid degraded performance:
+
+- **Commit after every phase** — `git add -A && git commit -m "spec/[ID] phase N: summary"` before moving on
+- **Compact at 50+ messages** — if the conversation is long, run `/compact` then resume with the session start ritual
+- **Read files, don't paste** — use file reads rather than pasting large code blocks into messages
+- **One task at a time** — complete, verify (`mvn compile`), commit, then move to next task
+- **After `/compact`** — state which task you're resuming from and re-read the tasks.md checkpoint
+
+## 📋 Spec-Driven Workflow
+
+All features follow a 4-phase spec process. Use the custom commands:
+
+```bash
+/spec:new <feature-name>     # Start a new spec
+/spec:requirements           # Review/generate requirements (EARS format)
+/spec:design                 # Generate design with Mermaid diagrams
+/spec:tasks                  # Break into atomic tasks
+/spec:implement              # Execute tasks one by one
+```
+
+**Never write implementation code before requirements AND design are approved.**
+
+## ✅ Quality Gates
+
+Before marking any phase complete:
+- Phase 1 (Data): `mvn liquibase:update && mvn compile`
+- Phase 2 (Service): `mvn test -Dtest=*ServiceTest`
+- Phase 3 (Controller): `mvn test -Dtest=*ControllerTest`
+- Phase 5 (All tests): `mvn clean verify`
+
+If tests fail, fix before continuing. Never skip.
+
 ## Project Overview
 
 Irish Payslips Management System - A Spring Boot 3.2 application for Irish payroll processing with comprehensive tax compliance (PAYE, PRSI, USC). This system handles employee management, payroll calculations, payslip generation, and Revenue compliance reporting.
@@ -20,7 +62,6 @@ mvn clean package                # Build JAR
 mvn test                         # Run all unit tests
 mvn verify                       # Run integration tests
 mvn test -Dtest=PayrollServiceTest  # Run specific test class
-mvn jacoco:report                # Generate test coverage report
 ```
 
 ### Database Migrations
@@ -176,9 +217,6 @@ Use `@SpringBootTest` with Testcontainers for repository layer. Test complex que
 
 ### Test Data
 Use `TestDataBuilder` pattern for creating complex test objects. Keep test fixtures in `src/test/resources/fixtures/`.
-
-### Coverage
-JaCoCo plugin generates coverage reports in `target/site/jacoco/`. Aim for >80% coverage on service and tax calculation classes.
 
 ## API Documentation
 

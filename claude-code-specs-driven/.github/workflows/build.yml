@@ -1,0 +1,70 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build and Test
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: irish_payroll_test
+          POSTGRES_USER: payroll
+          POSTGRES_PASSWORD: payroll_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compile
+        run: mvn clean compile -q
+
+      - name: Run unit tests
+        run: mvn test -q
+
+      - name: Run integration tests
+        run: mvn verify -P test -q
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/irish_payroll_test
+          SPRING_DATASOURCE_USERNAME: payroll
+          SPRING_DATASOURCE_PASSWORD: payroll_test
+
+      - name: Generate test coverage report
+        run: mvn jacoco:report
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+
+      - name: Build JAR
+        run: mvn package -DskipTests -q
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: irish-payslips-jar
+          path: target/*.jar

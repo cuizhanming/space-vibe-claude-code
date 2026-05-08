@@ -128,6 +128,54 @@ docker build -t irish-payslips .
 - **PPS Number Validation**: Custom validator for Irish Personal Public Service numbers
 - **Revenue Integration**: Prepared for future Revenue Online Service (ROS) integration
 
+## Technology Dependency Map
+
+```mermaid
+graph LR
+    subgraph Runtime
+        SB[Spring Boot 3.2]
+        J17[Java 17]
+    end
+    subgraph Web
+        MVC[Spring MVC]
+        SEC[Spring Security 6]
+        OA[OpenAPI / Springdoc]
+    end
+    subgraph Data
+        JPA[Spring Data JPA]
+        HB[Hibernate 6]
+        LB[Liquibase]
+        PG[(PostgreSQL 15+)]
+        H2[(H2 - Dev/Test)]
+    end
+    subgraph Auth
+        JWT[JJWT 0.12.3]
+        BC[BCrypt]
+    end
+    subgraph Docs
+        iPDF[iText PDF]
+        POI[Apache POI]
+        TL[Thymeleaf]
+    end
+    subgraph Testing
+        JU5[JUnit 5]
+        MK[Mockito]
+        TC[Testcontainers]
+        WM[WireMock]
+    end
+    subgraph Mapping
+        MS[MapStruct]
+        JK[Jackson]
+    end
+    SB --> MVC
+    SB --> SEC
+    SB --> JPA
+    JPA --> HB
+    HB --> PG
+    SEC --> JWT
+    SEC --> BC
+```
+
 ## Performance Requirements
 - **Response Time**: < 200ms for payslip generation
 - **Throughput**: Support 1000+ employees per payroll run

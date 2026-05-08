@@ -9,6 +9,82 @@ inclusion: always
 ## Overview
 The Irish Payslips Management System follows a layered architecture pattern with clear separation of concerns. The project structure is organized around Spring Boot conventions with additional layers for Irish payroll-specific functionality.
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+    subgraph API ["REST API Layer"]
+        AC[AuthController]
+        EC[EmployeeController]
+        PC[PayrollController]
+        RC[ReportController]
+    end
+
+    subgraph Services ["Service Layer"]
+        AS[AuthenticationService]
+        ES[EmployeeService]
+        PS[PayrollService]
+        subgraph Tax ["Tax Calculation"]
+            PAYE[PayeCalculationService]
+            PRSI[PrsiCalculationService]
+            USC[UscCalculationService]
+        end
+        RPT[ExcelReportService]
+    end
+
+    subgraph Data ["Data Layer"]
+        ER[EmployeeRepository]
+        PR[PayrollRepository]
+        SR[PayslipRepository]
+        TR[TaxConfigRepository]
+    end
+
+    subgraph Security ["Security"]
+        JWT[JwtAuthFilter]
+        UDS[UserDetailsService]
+    end
+
+    AC --> AS
+    EC --> ES
+    PC --> PS
+    RC --> RPT
+    PS --> PAYE
+    PS --> PRSI
+    PS --> USC
+    ES --> ER
+    PS --> PR
+    PS --> SR
+    PAYE --> TR
+    PRSI --> TR
+    USC --> TR
+    JWT --> UDS
+```
+
+## Request Flow
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant F as JwtAuthFilter
+    participant Ctrl as Controller
+    participant Svc as Service
+    participant Repo as Repository
+    participant DB as PostgreSQL
+
+    C->>F: HTTP Request + Bearer token
+    F->>F: Validate JWT
+    F->>Ctrl: Authenticated request
+    Ctrl->>Ctrl: Validate request body (Bean Validation)
+    Ctrl->>Svc: Call service method
+    Svc->>Repo: Query / persist
+    Repo->>DB: SQL
+    DB-->>Repo: ResultSet
+    Repo-->>Svc: Entity
+    Svc->>Svc: Business logic / tax calc
+    Svc-->>Ctrl: DTO response
+    Ctrl-->>C: HTTP Response (200/201/4xx)
+```
+
 ## Directory Structure
 ```
 irish-payslips-management/
