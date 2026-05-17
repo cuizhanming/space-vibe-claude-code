@@ -166,13 +166,15 @@ public class PayrollService {
 
     /**
      * Get payroll entity by ID (for internal use).
+     * Eagerly fetches payslips and employees to prevent LazyInitializationException
+     * when data is accessed outside the transaction (e.g., in report generation).
      *
      * @param id Payroll ID
-     * @return Payroll entity
+     * @return Payroll entity with payslips and employees loaded
      */
     @Transactional(readOnly = true)
     public Payroll getPayrollEntity(UUID id) {
-        return payrollRepository.findById(id)
+        return payrollRepository.findByIdWithPayslipsAndEmployees(id)
                 .orElseThrow(() -> new PayrollProcessingException("Payroll not found with id: " + id));
     }
 }

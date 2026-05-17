@@ -3,6 +3,8 @@ package com.irish.payroll.repository;
 import com.irish.payroll.entity.Payroll;
 import com.irish.payroll.entity.PayrollStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -35,4 +37,11 @@ public interface PayrollRepository extends JpaRepository<Payroll, UUID> {
      * Find all payrolls ordered by date descending.
      */
     List<Payroll> findAllByOrderByPayPeriodEndDesc();
+
+    /**
+     * Find payroll by ID with payslips and employees eagerly fetched.
+     * This prevents LazyInitializationException when accessing employee data outside transaction.
+     */
+    @Query("SELECT p FROM Payroll p LEFT JOIN FETCH p.payslips ps LEFT JOIN FETCH ps.employee WHERE p.id = :id")
+    Optional<Payroll> findByIdWithPayslipsAndEmployees(@Param("id") UUID id);
 }

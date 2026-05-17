@@ -1,0 +1,49 @@
+# Memory: Project Standards and Philosophy
+
+**Date:** 2025-12-22
+
+## Core Principle
+
+**Goal: Best Practice & Industry-Leading Standards**
+
+Not just "production-ready" - aiming for:
+- ✅ Best practices in every aspect
+- ✅ Leading industry standards
+- ✅ Excellence, not just adequacy
+
+This means I should be critically evaluating:
+- Code quality and architecture
+- Security hardening
+- Performance optimization
+- Testing coverage
+- Documentation completeness
+- Scalability considerations
+- Maintainability
+- DevOps practices
+- Monitoring and observability
+
+## Current Assessment: Irish Payroll Management API
+
+Looking back at the API with this lens, there are indeed several areas that need improvement beyond "production-ready":
+
+**Missing Industry Standards:**
+1. No rate limiting or throttling
+2. No comprehensive integration test suite
+3. No role-based access control (RBAC)
+4. No API versioning strategy
+5. No request/response logging
+6. No metrics/monitoring (Prometheus, Micrometer)
+7. No circuit breakers for resilience
+8. No distributed tracing
+9. Excel report bug needs fixing
+10. No caching strategy for tax configurations
+11. No API response pagination
+12. No comprehensive error handling strategy
+
+## Commitment
+
+We're building for excellence, not just functionality. Every decision should be measured against:
+- What would industry leaders do?
+- What are the best practices in this domain?
+- How can we exceed expectations?
+- Is this truly production-grade at scale?
